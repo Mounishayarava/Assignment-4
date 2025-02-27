@@ -1,0 +1,132 @@
+import random
+# Employee shift preferences for each day of the week
+employee_shifts = {
+    "Alice": ["morning", "afternoon", "evening", "morning", "afternoon", "evening", "morning"],
+    "Bob": ["afternoon", "morning", "afternoon", "evening", "morning", "evening", "morning"],
+    "Carol": ["evening", "morning", "afternoon", "evening", "morning", "afternoon", "evening"]
+}
+# Available shifts for each day
+shifts = ["morning", "afternoon", "evening"]
+schedule = {day: {"morning": [], "afternoon": [], "evening": []} for day in range(7)}
+def assign_shifts(employee_shifts):
+    # Store the number of days worked by each employee
+    days_worked = {employee: 0 for employee in employee_shifts}
+    for day in range(7):
+        for shift in shifts:
+            # Find employees available for this shift and who have worked less than 5 days
+            available_employees = [emp for emp in employee_shifts if employee_shifts[emp][day] == shift and days_worked[emp] < 5]
+            
+            if len(available_employees) < 2:
+                # If fewer than 2 employees are available, randomly assign employees who have worked less than 5 days
+                eligible_employees = [emp for emp in days_worked if days_worked[emp] < 5 and emp not in available_employees]
+                # Ensure that we do not exceed the number of employees left
+                needed_employees = 2 - len(available_employees)
+                # If there are enough employees to meet the requirement, randomly sample
+                if len(eligible_employees) >= needed_employees:
+                    additional_employees = random.sample(eligible_employees, needed_employees)
+                    available_employees.extend(additional_employees)
+                else:
+                    available_employees.extend(eligible_employees)
+            schedule[day][shift].extend(available_employees)
+            for emp in available_employees:
+                days_worked[emp] += 1
+    return schedule
+# Calling the function and printing the schedule
+final_schedule = assign_shifts(employee_shifts)
+# Function to print the final schedule
+def print_schedule(schedule):  
+    for day in schedule:
+        print(f"Day {day}:")
+        for shift in shifts:
+            print(f"  {shift.capitalize()}: {', '.join(schedule[day][shift])}")
+print_schedule(final_schedule)
+
+
+
+Java:
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+public class EmployeeSchedule {
+    public static void main(String[] args) {
+        // Employee shift preferences for each day of the week
+        List<String> employeeNames = new ArrayList<>();
+        employeeNames.add("Alice");
+        employeeNames.add("Bob");
+        employeeNames.add("Carol");
+        List<String[]> employeeShifts = new ArrayList<>();
+        employeeShifts.add(new String[]{"morning", "afternoon", "evening", "morning", "afternoon", "evening", "morning"});
+        employeeShifts.add(new String[]{"afternoon", "morning", "afternoon", "evening", "morning", "evening", "morning"});
+        employeeShifts.add(new String[]{"evening", "morning", "afternoon", "evening", "morning", "afternoon", "evening"});
+        // Available shifts for each day
+        String[] shifts = {"morning", "afternoon", "evening"};
+        // Schedule to store employees assigned to each shift
+        List<List<String>> schedule = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            List<String> dayShifts = new ArrayList<>();
+            schedule.add(dayShifts);
+        }
+        // Store the number of days worked by each employee
+        int[] daysWorked = new int[employeeNames.size()];
+        // Assign shifts
+        assignShifts(employeeNames, employeeShifts, shifts, schedule, daysWorked);
+        // Print the final schedule
+        printSchedule(schedule);
+    }
+    public static void assignShifts(List<String> employeeNames, List<String[]> employeeShifts, String[] shifts, List<List<String>> schedule, int[] daysWorked) {
+        Random rand = new Random();
+        for (int day = 0; day < 7; day++) {
+            for (String shift : shifts) {
+                // List of employees available for the shift
+                List<String> availableEmployees = new ArrayList<>();
+                for (int i = 0; i < employeeNames.size(); i++) {
+                    if (employeeShifts.get(i)[day].equals(shift) && daysWorked[i] < 5) {
+                        availableEmployees.add(employeeNames.get(i));
+                    }
+                }
+
+                // If fewer than 2 employees are available, randomly assign others who have worked less than 5 days
+                if (availableEmployees.size() < 2) {
+                    List<String> eligibleEmployees = new ArrayList<>();
+                    for (int i = 0; i < employeeNames.size(); i++) {
+                        if (daysWorked[i] < 5 && !availableEmployees.contains(employeeNames.get(i))) {
+                            eligibleEmployees.add(employeeNames.get(i));
+                        }
+                    }
+                    // Ensure we do not sample more than the available employees
+                    int requiredEmployees = 2 - availableEmployees.size();
+                    if (eligibleEmployees.size() >= requiredEmployees) {
+                        // Randomly select additional employees
+                        for (int i = 0; i < requiredEmployees; i++) {
+                            String employee = eligibleEmployees.get(rand.nextInt(eligibleEmployees.size()));
+                            availableEmployees.add(employee);
+                            eligibleEmployees.remove(employee); // Remove from the list after adding
+                        }
+                    } else {
+                        // If fewer than required employees are available, just assign them all
+                        availableEmployees.addAll(eligibleEmployees);
+                    }
+                }
+
+                // Assign the employees to the shift
+                schedule.get(day).addAll(availableEmployees);
+                for (String employee : availableEmployees) {
+                    int index = employeeNames.indexOf(employee);
+                    daysWorked[index]++;
+                }
+            }
+        }
+    }
+
+    // Print the final schedule
+    public static void printSchedule(List<List<String>> schedule) {
+        for (int day = 0; day < 7; day++) {
+            System.out.println("Day " + (day + 1) + ":");
+            String[] shifts = {"morning", "afternoon", "evening"};
+            for (String shift : shifts) {
+                System.out.println("  " + shift + ": " + String.join(", ", schedule.get(day)));
+            }
+        }
+    }
+}
+
